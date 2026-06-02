@@ -4,6 +4,7 @@ import mongoose from 'mongoose';
 import cors from 'cors';
 import rankRoutes from './routes/rankRoutes.js';
 import authRoutes from './routes/authRoutes.js';
+import path from 'path';
 
 const app = express();
 
@@ -23,6 +24,13 @@ app.use(express.json());
 app.use('/api/rank', rankRoutes);
 app.use('/api/auth', authRoutes);
 
+if (process.env.NODE_ENV === "production") {
+    app.use(express.static(path.join(process.cwd(), "../client/dist")));
+
+    app.get("*", (req, res) => {
+        res.sendFile(path.join(process.cwd(), "../client/dist", "index.html"));
+    });
+}
 // 4. Database Connection
 mongoose.connect(process.env.MONGODB_URL || process.env.MONGO_URI)
   .then(() => console.log("MongoDB Connected Successfully"))
