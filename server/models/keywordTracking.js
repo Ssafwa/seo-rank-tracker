@@ -1,11 +1,26 @@
 import mongoose from 'mongoose';
 
 const keywordTrackingSchema = new mongoose.Schema({
-    keyword: { type: String, required: true },
-    url: { type: String, required: true },
+    keyword: { type: String, required: true, trim: true },
+    url: { type: String, required: true, trim: true },
+    domain: { type: String, trim: true },
     status: { type: String, default: 'pending' },
-    createdAt: { type: Date, default: Date.now }
-});
+    active: { type: Boolean, default: true },
+    currentPosition: { type: Number, default: null },
+    currentPage: { type: Number, default: null },
+    bestPosition: { type: Number, default: null },
+    positionChange: { type: Number, default: 0 },
+    lastChecked: { type: Date, default: null },
+    competitors: [{
+        position: Number,
+        url: String,
+        domain: String,
+        title: String,
+        snippet: String,
+    }],
+    createdAt: { type: Date, default: Date.now },
+    updatedAt: { type: Date, default: Date.now }
+}, { timestamps: true });
 
 // Explicitly set the collection name to 'keywordtrackings'
 export default mongoose.model('KeywordTracking', keywordTrackingSchema, 'keywordtrackings');
