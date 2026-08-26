@@ -44,7 +44,10 @@ app.use('/api/auth', authRoutes);
 
 if (process.env.NODE_ENV === 'production') {
   const clientPath = path.resolve(__dirname, '../client/dist');
-  app.use(express.static(clientPath));
+  console.log('Production mode detected. NODE_ENV=%s, serving client from %s', process.env.NODE_ENV, clientPath);
+
+  // Explicitly enable index serving for static files to make behavior deterministic
+  app.use(express.static(clientPath, { index: 'index.html' }));
 
   // Serve index.html for any non-API route. Using app.use avoids path-to-regexp parsing issues
   // that can occur with express v5 when using wildcard patterns. Explicitly skip API routes.
@@ -52,6 +55,7 @@ if (process.env.NODE_ENV === 'production') {
     if (req.path.startsWith('/api') || req.path.startsWith('/_next') || req.path.startsWith('/static')) {
       return next();
     }
+    console.log('Serving index.html for path:', req.path);
     res.sendFile(path.join(clientPath, 'index.html'));
   });
 }
