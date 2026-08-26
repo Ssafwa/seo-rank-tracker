@@ -7,7 +7,7 @@
   "scripts": {
     "start": "node server.js",
     "server": "nodemon server.js",
-    "postinstall": "cd ../client && npm ci && npm run build"
+    "postinstall": "cd ../client && NODE_ENV=development npm ci && npm run build"
   },
   "keywords": [],
   "author": "",
