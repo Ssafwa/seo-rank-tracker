@@ -7,39 +7,57 @@ import { fileURLToPath } from 'url';
 import rankRoutes from './routes/rankRoutes.js';
 import authRoutes from './routes/authRoutes.js';
 
-// Setup __dirname for ES Modules
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express();
 
-// 1. Middleware
+const allowedOrigins = [
+  'http://localhost:5173',
+  'http://127.0.0.1:5173',
+  'http://localhost:4173',
+  'http://localhost:3000',
+  'http://localhost:5000',
+  ...(process.env.FRONTEND_URL ? process.env.FRONTEND_URL.split(',').map((url) => url.trim()) : []),
+  ...(process.env.CLIENT_URL ? process.env.CLIENT_URL.split(',').map((url) => url.trim()) : []),
+];
+
 app.use(cors({
-    origin: process.env.FRONTEND_URL || "http://localhost:5173", 
-    credentials: true
+  origin: (origin, callback) => {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+      return;
+    }
+    callback(new Error('Not allowed by CORS'));
+  },
+  credentials: true
 }));
+
 app.use(express.json());
 
-// 2. API Routes
+app.get('/api/health', (req, res) => {
+  res.json({ ok: true, app: 'seo-rank-tracker', mongo: mongoose.connection.readyState === 1 });
+});
+
 app.use('/api/rank', rankRoutes);
 app.use('/api/auth', authRoutes);
 
-// 3. Serve Frontend in Production
-if (process.env.NODE_ENV === "production") {
-    // Points to the 'client/dist' folder created after 'npm run build'
-    const clientPath = path.resolve(__dirname, '../client/dist');
-    app.use(express.static(clientPath));
-
-    app.get("*", (req, res) => {
-        res.sendFile(path.join(clientPath, "index.html"));
-    });
+if (process.env.NODE_ENV === 'production') {
+  const clientPath = path.resolve(__dirname, '../client/dist');
+  app.use(express.static(clientPath));
+  app.get('*', (req, res) => {
+    res.sendFile(path.join(clientPath, 'index.html'));
+  });
 }
 
-// 4. Database Connection
-mongoose.connect(process.env.MONGODB_URL || process.env.MONGO_URI)
-  .then(() => console.log("MongoDB Connected Successfully"))
-  .catch((err) => console.error("MongoDB Connection Error:", err));
+const mongoUri = process.env.MONGODB_URL || process.env.MONGO_URI;
+if (mongoUri) {
+  mongoose.connect(mongoUri)
+    .then(() => console.log('MongoDB Connected Successfully'))
+    .catch((err) => console.error('MongoDB Connection Error:', err));
+} else {
+  console.log('No MongoDB connection string provided. Running in fallback mode without database persistence.');
+}
 
-// 5. Server Initialization
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, '0.0.0.0', () => console.log(`Server running on port ${PORT}`));
