@@ -45,19 +45,33 @@ app.use('/api/auth', authRoutes);
 if (process.env.NODE_ENV === 'production') {
   const clientPath = path.resolve(__dirname, '../client/dist');
   app.use(express.static(clientPath));
-  app.get('*', (req, res) => {
+
+  // Serve index.html for any non-API route. Using app.use avoids path-to-regexp parsing issues
+  // that can occur with express v5 when using wildcard patterns. Explicitly skip API routes.
+  app.use((req, res, next) => {
+    if (req.path.startsWith('/api') || req.path.startsWith('/_next') || req.path.startsWith('/static')) {
+      return next();
+    }
     res.sendFile(path.join(clientPath, 'index.html'));
   });
 }
 
 const mongoUri = process.env.MONGODB_URL || process.env.MONGO_URI;
-if (mongoUri) {
-  mongoose.connect(mongoUri)
-    .then(() => console.log('MongoDB Connected Successfully'))
-    .catch((err) => console.error('MongoDB Connection Error:', err));
-} else {
-  console.log('No MongoDB connection string provided. Running in fallback mode without database persistence.');
-}
-
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, '0.0.0.0', () => console.log(`Server running on port ${PORT}`));
+
+const startServer = async () => {
+  if (mongoUri) {
+    try {
+      await mongoose.connect(mongoUri);
+      console.log('MongoDB Connected Successfully');
+    } catch (err) {
+      console.error('MongoDB Connection Error:', err);
+    }
+  } else {
+    console.log('No MongoDB connection string provided. Running in fallback mode without database persistence.');
+  }
+
+  app.listen(PORT, '0.0.0.0', () => console.log(`Server running on port ${PORT}`));
+};
+
+startServer();
