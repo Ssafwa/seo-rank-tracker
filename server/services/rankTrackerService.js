@@ -1,3 +1,4 @@
+import '@browserbasehq/sdk/shims/node';
 import { chromium } from "playwright-core";
 import Browserbase from "@browserbasehq/sdk";
 
@@ -19,7 +20,7 @@ export async function rankTracker(keyword, targetDomain){
        // 2. initial google visit & consent handling
        await page.goto("https://www.google.com", {waitUntil: "networkidle"});
        try {
-        const btn = await page.$('button[id=L2AGLB], form[action*="] button')
+        const btn = await page.$('button[id="L2AGLB"], form[action*="consent"] button')
         if(btn){
             await btn.click();
             await page.waitForTimeout(1500);
