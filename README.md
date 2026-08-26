@@ -66,7 +66,7 @@ NODE_ENV: production
 JWT_SECRET: your_jwt_secret
 
 MONGODB_URL: mongodb+srv://<username>:<password>@cluster0.kwdy7yb.mongodb.net/seo?retryWrites=true&w=majority
-# or MONGO_URI: mongodb://user:pass@host:port/dbname
+# or MONGO_URI="mongodb://user:pass@host:port/dbname"
 
 FRONTEND_URL: https://your-vercel-frontend-url.vercel.app
 
