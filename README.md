@@ -34,6 +34,9 @@ node server.js
 2. Frontend Setup
 Bash
 cd client
+cp .env.example .env
+# VITE_BACKEND_URL should point to your backend URL in local dev or production
+# Example: VITE_BACKEND_URL=http://localhost:5000
 npm install
 # Run the development server
 npm run dev
@@ -68,6 +71,9 @@ MONGODB_URL: mongodb+srv://<username>:<password>@cluster0.kwdy7yb.mongodb.net/se
 FRONTEND_URL: https://your-vercel-frontend-url.vercel.app
 
 BROWSERBASE_API_KEY: your_browserbase_api_key (required for the keyword rank/check feature)
+
+Frontend Vercel env (required for production):
+VITE_BACKEND_URL: https://your-render-service-name.onrender.com
 
 🛠 Tech Stack
 Frontend: React, Vite, Tailwind CSS, Axios, Lucide-React
