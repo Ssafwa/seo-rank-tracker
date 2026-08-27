@@ -24,10 +24,25 @@ const allowedOrigins = [
 
 app.use(cors({
   origin: (origin, callback) => {
-    if (!origin || allowedOrigins.includes(origin)) {
-      callback(null, true);
-      return;
+    // Allow server-to-server tools (no origin), and allow when origin is in the list
+    if (!origin) return callback(null, true);
+
+    // If FRONTEND_URL is not set in production, be permissive to avoid blocking builds/preview
+    if (process.env.NODE_ENV === 'production' && !process.env.FRONTEND_URL) {
+      return callback(null, true);
     }
+
+    // Otherwise check the allowed list and any additional env-provided URLs
+    const extra = [
+      ...(process.env.FRONTEND_URL ? process.env.FRONTEND_URL.split(',').map((u) => u.trim()) : []),
+      ...(process.env.CLIENT_URL ? process.env.CLIENT_URL.split(',').map((u) => u.trim()) : []),
+    ];
+    const allAllowed = new Set([...allowedOrigins, ...extra]);
+    if (allAllowed.has(origin)) return callback(null, true);
+
+    // Optional override: set ALLOW_ORIGIN='*' to allow any origin (not recommended for long-term)
+    if (process.env.ALLOW_ORIGIN === '*') return callback(null, true);
+
     callback(new Error('Not allowed by CORS'));
   },
   credentials: true
