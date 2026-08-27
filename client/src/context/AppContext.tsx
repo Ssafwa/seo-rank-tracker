@@ -24,7 +24,7 @@ interface AppContextType {
 
 export const AppContext = createContext<AppContextType | undefined>(undefined);
 
-const BACKEND_URL = "http://localhost:5000";
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:5000";
 
 export function AppProvider({ children }: { children: any }) {
   const [user, setUser] = useState<User | null>(null);
@@ -39,6 +39,9 @@ export function AppProvider({ children }: { children: any }) {
   // Attach token automatically to all header requests if present
   api.interceptors.request.use((config) => {
     if (token) {
+      config.headers = config.headers || {};
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
       config.headers.Authorization = `Bearer ${token}`;
     }
     return config;
@@ -69,12 +72,12 @@ export function AppProvider({ children }: { children: any }) {
         const res = await fetch(`${BACKEND_URL}/api/auth/user`, {
           method: "GET",
           headers: {
-            "Authorization": `Bearer ${token}`
-          }
+            Authorization: `Bearer ${token}`,
+          },
         });
         const data = await res.json();
-        
-        if (data.success || data.email || data.name) {
+
+        if (data && (data.success || data.email || data.name || data.user)) {
           setUser(data.user || data);
         } else {
           setToken(null);
@@ -99,7 +102,7 @@ export function AppProvider({ children }: { children: any }) {
         body: JSON.stringify({ email, password }),
       });
       const data = await res.json();
-      
+
       if (data.success) {
         setToken(data.token);
         setUser(data.user);
@@ -122,7 +125,7 @@ export function AppProvider({ children }: { children: any }) {
         body: JSON.stringify({ name, email, password }),
       });
       const data = await res.json();
-      
+
       if (data.success) {
         setToken(data.token);
         setUser(data.user);

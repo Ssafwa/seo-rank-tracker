@@ -23,14 +23,20 @@ MongoDB Atlas account
 Bash
 cd server
 npm install
-# Create a .env file in the /server directory:
-# MONGO_URI=your_mongodb_connection_string
+# Create a .env file in the /server directory with these variables (example):
+# JWT_SECRET="your_jwt_secret_here"
+# MONGODB_URL="mongodb+srv://<username>:<password>@cluster0.kwdy7yb.mongodb.net/seo?retryWrites=true&w=majority"
+# (or) MONGO_URI="mongodb://user:pass@host:port/dbname"  # include the protocol prefix
 # PORT=5000
 # FRONTEND_URL=http://localhost:5173
+# BROWSERBASE_API_KEY="your_browserbase_api_key_here"  # required for search/rank features that use Browserbase
 node server.js
 2. Frontend Setup
 Bash
 cd client
+cp .env.example .env
+# VITE_BACKEND_URL should point to your backend URL in local dev or production
+# Example: VITE_BACKEND_URL=http://localhost:5000
 npm install
 # Run the development server
 npm run dev
@@ -53,13 +59,21 @@ Build Command: npm install
 
 Start Command: node server.js
 
-Environment Variables: Add the following in the Render Dashboard:
+Environment Variables: Add the following in the Render Dashboard (use MONGODB_URL or MONGO_URI — both are supported):
 
 NODE_ENV: production
 
-MONGO_URI: your_mongodb_connection_string
+JWT_SECRET: your_jwt_secret
+
+MONGODB_URL: mongodb+srv://<username>:<password>@cluster0.kwdy7yb.mongodb.net/seo?retryWrites=true&w=majority
+# or MONGO_URI="mongodb://user:pass@host:port/dbname"
 
 FRONTEND_URL: https://your-vercel-frontend-url.vercel.app
+
+BROWSERBASE_API_KEY: your_browserbase_api_key (required for the keyword rank/check feature)
+
+Frontend Vercel env (required for production):
+VITE_BACKEND_URL: https://your-render-service-name.onrender.com
 
 🛠 Tech Stack
 Frontend: React, Vite, Tailwind CSS, Axios, Lucide-React
