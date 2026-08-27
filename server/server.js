@@ -1,4 +1,5 @@
 import 'dotenv/config';
+import fs from 'fs';
 import express from 'express';
 import mongoose from 'mongoose';
 import cors from 'cors';
@@ -67,9 +68,22 @@ if (process.env.NODE_ENV === 'production') {
   // Serve index.html for any non-API route. Using app.use avoids path-to-regexp parsing issues
   // that can occur with express v5 when using wildcard patterns. Explicitly skip API routes.
   app.use((req, res, next) => {
-    if (req.path.startsWith('/api') || req.path.startsWith('/_next') || req.path.startsWith('/static')) {
+    if (req.path.startsWith('/api') || req.path.startsWith('/_next') || req.path.startsWith('/static') || req.path.startsWith('/assets')) {
       return next();
     }
+
+    // If the request looks like it is for a file (contains an extension), try to serve
+    // that file directly from the client dist. If it doesn't exist, return 404 rather
+    // than falling back to index.html (prevents serving index.html with wrong MIME).
+    const ext = path.extname(req.path);
+    if (ext) {
+      const requested = path.join(clientPath, req.path.replace(/^\//, ''));
+      if (fs.existsSync(requested)) {
+        return res.sendFile(requested);
+      }
+      return res.status(404).send('Not found');
+    }
+
     console.log('Serving index.html for path:', req.path);
     res.sendFile(path.join(clientPath, 'index.html'));
   });
